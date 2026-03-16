@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.kolidgio.bankapp.accounts.service.errors.BadRequestException;
 import ru.kolidgio.bankapp.accounts.service.errors.ConflictException;
+import ru.kolidgio.bankapp.accounts.service.errors.NotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,13 @@ public class GlobalExceptionHandler {
         );
 
         problemDetail.setProperty("errors", errors);
+        return problemDetail;
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFound(NotFoundException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+        problemDetail.setTitle("Ресурс не найден");
         return problemDetail;
     }
 }
