@@ -16,6 +16,7 @@
         <module>config-server</module>
         <module>api-gateway</module>
         <module>accounts-service</module>
+        <module>cash-service</module>
 
     </modules>
 

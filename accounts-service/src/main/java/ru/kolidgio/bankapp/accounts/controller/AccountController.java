@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.kolidgio.bankapp.accounts.dto.account.AccountDto;
+import ru.kolidgio.bankapp.accounts.dto.account.ChangeBalanceDto;
 import ru.kolidgio.bankapp.accounts.dto.account.CreateAccountDto;
 import ru.kolidgio.bankapp.accounts.service.AccountService;
 
@@ -35,6 +36,19 @@ public class AccountController {
     @GetMapping("/{accountId}")
     public AccountDto findById(@PathVariable("userId") Long userId, @PathVariable("accountId") Long accountId) {
         return accountService.findById(userId, accountId);
+    }
+
+
+    @PatchMapping("/{accountId}/deposit")
+    public AccountDto deposit(@PathVariable("userId") Long userId, @PathVariable("accountId") Long accountId,
+                              @RequestBody @Valid ChangeBalanceDto changeBalanceDto) {
+        return accountService.deposit(userId, accountId, changeBalanceDto);
+    }
+
+    @PatchMapping("/{accountId}/withdraw")
+    public AccountDto withdraw(@PathVariable("userId") Long userId, @PathVariable("accountId") Long accountId,
+                               @RequestBody @Valid ChangeBalanceDto changeBalanceDto) {
+        return accountService.withdraw(userId, accountId, changeBalanceDto);
     }
 
 }
