@@ -1,4 +1,4 @@
-package ru.kolidgio.bankapp.accounts.dto;
+package ru.kolidgio.bankapp.accounts.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Past;

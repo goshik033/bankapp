@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.kolidgio.bankapp.accounts.dto.CreateUserDto;
-import ru.kolidgio.bankapp.accounts.dto.UpdateUserDto;
-import ru.kolidgio.bankapp.accounts.dto.UpdateUserPasswordDto;
-import ru.kolidgio.bankapp.accounts.dto.UserDto;
+import org.springframework.transaction.annotation.Transactional;
+import ru.kolidgio.bankapp.accounts.dto.user.CreateUserDto;
+import ru.kolidgio.bankapp.accounts.dto.user.UpdateUserDto;
+import ru.kolidgio.bankapp.accounts.dto.user.UpdateUserPasswordDto;
+import ru.kolidgio.bankapp.accounts.dto.user.UserDto;
 import ru.kolidgio.bankapp.accounts.entity.User;
 import ru.kolidgio.bankapp.accounts.repository.UserRepository;
 import ru.kolidgio.bankapp.accounts.service.errors.BadRequestException;
@@ -22,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public UserDto create(CreateUserDto createUserDto) {
         if (userRepository.existsByEmail(createUserDto.email()))
             throw new ConflictException("Пользователь с email " + createUserDto.email() + " уже существует");
@@ -42,6 +44,7 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
@@ -49,6 +52,7 @@ public class UserService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public UserDto findById(Long id) {
         requireId(id, "userId");
         User user = userRepository.findById(id)
@@ -57,6 +61,7 @@ public class UserService {
 
     }
 
+    @Transactional
     public UserDto update(Long id, UpdateUserDto updateUserDto) {
         requireId(id, "userId");
 
@@ -89,6 +94,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public void delete(Long id) {
         requireId(id, "userId");
         userRepository.findById(id)
@@ -96,6 +102,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    @Transactional
     public void changePassword(Long id, UpdateUserPasswordDto updateUserPasswordDto) {
         requireId(id, "userId");
 
