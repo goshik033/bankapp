@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.kolidgio.bankapp.cash.client.AccountsClient;
 import ru.kolidgio.bankapp.cash.client.BlockerClient;
+import ru.kolidgio.bankapp.cash.client.NotificationsClient;
 import ru.kolidgio.bankapp.cash.dto.account.AccountDto;
 import ru.kolidgio.bankapp.cash.dto.account.CashOperationDto;
 import ru.kolidgio.bankapp.cash.dto.account.CashOperationResultDto;
 import ru.kolidgio.bankapp.cash.dto.blocker.BlockerResponseDto;
+import ru.kolidgio.bankapp.cash.dto.notifications.NotificationRequestDto;
 import ru.kolidgio.bankapp.cash.service.errors.OperationBlockedException;
 
 @Service
@@ -16,6 +18,8 @@ public class CashService {
 
     private final AccountsClient accountsClient;
     private final BlockerClient blockerClient;
+    private final NotificationsClient notificationsClient;
+
 
     public CashOperationResultDto deposit(Long userId, Long accountId, CashOperationDto dto) {
         BlockerResponseDto blockerResponse = blockerClient.check(dto.amount());
@@ -25,12 +29,22 @@ public class CashService {
 
         AccountDto accountDto = accountsClient.deposit(userId, accountId, dto.amount());
 
+        notificationsClient.send(new NotificationRequestDto(
+                userId,
+                accountId,
+                "DEPOSIT",
+                dto.amount(),
+                "SUCCESS"
+        ));
+
         return new CashOperationResultDto(
                 accountDto.id(),
                 dto.amount(),
                 "DEPOSIT",
                 "SUCCESS"
         );
+
+
     }
 
     public CashOperationResultDto withdraw(Long userId, Long accountId, CashOperationDto dto) {
@@ -40,6 +54,14 @@ public class CashService {
         }
 
         AccountDto accountDto = accountsClient.withdraw(userId, accountId, dto.amount());
+
+        notificationsClient.send(new NotificationRequestDto(
+                userId,
+                accountId,
+                "WITHDRAW",
+                dto.amount(),
+                "SUCCESS"
+        ));
 
         return new CashOperationResultDto(
                 accountDto.id(),

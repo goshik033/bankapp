@@ -21,3 +21,5 @@ services:
     url: http://localhost:8081
   blocker-service:
     url: http://localhost:8085
+  notification-service:
+    url: http://localhost:8086
