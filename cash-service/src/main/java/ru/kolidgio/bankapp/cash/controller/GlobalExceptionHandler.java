@@ -7,6 +7,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
+import ru.kolidgio.bankapp.cash.service.errors.OperationBlockedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -39,5 +40,13 @@ public class GlobalExceptionHandler {
         } catch (Exception ignored) {
         }
         return e.getMessage();
+    }
+
+    @ExceptionHandler(OperationBlockedException.class)
+    public ProblemDetail handleBlocked(OperationBlockedException e) {
+        ProblemDetail problemDetail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
+        problemDetail.setTitle("Операция заблокирована");
+        return problemDetail;
     }
 }

@@ -17,6 +17,8 @@
         <module>api-gateway</module>
         <module>accounts-service</module>
         <module>cash-service</module>
+        <module>blocker-service</module>
+
 
     </modules>
 

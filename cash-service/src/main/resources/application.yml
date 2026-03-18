@@ -19,3 +19,5 @@ management:
 services:
   accounts-service:
     url: http://localhost:8081
+  blocker-service:
+    url: http://localhost:8085
