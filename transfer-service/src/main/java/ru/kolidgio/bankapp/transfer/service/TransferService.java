@@ -4,14 +4,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.kolidgio.bankapp.transfer.client.AccountClient;
 import ru.kolidgio.bankapp.transfer.client.BlockerClient;
+import ru.kolidgio.bankapp.transfer.client.ExchangeClient;
 import ru.kolidgio.bankapp.transfer.client.NotificationClient;
 import ru.kolidgio.bankapp.transfer.dto.account.AccountDto;
 import ru.kolidgio.bankapp.transfer.dto.blocker.BlockerResponseDto;
+import ru.kolidgio.bankapp.transfer.dto.exchange.ConvertRequestDto;
+import ru.kolidgio.bankapp.transfer.dto.exchange.ConvertResponseDto;
 import ru.kolidgio.bankapp.transfer.dto.notification.NotificationRequestDto;
 import ru.kolidgio.bankapp.transfer.dto.transfer.TransferBetweenOwnAccountsRequestDto;
 import ru.kolidgio.bankapp.transfer.dto.transfer.TransferResultDto;
 import ru.kolidgio.bankapp.transfer.dto.transfer.TransferToAnotherUserRequestDto;
 import ru.kolidgio.bankapp.transfer.service.errors.OperationBlockedException;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,7 @@ public class TransferService {
     private final NotificationClient notificationClient;
     private final BlockerClient blockerClient;
     private final AccountClient accountClient;
+    private final ExchangeClient exchangeClient;
 
     public TransferResultDto transferBetweenOwnAccounts(Long userId,
                                                         Long fromAccountId,
@@ -29,17 +35,17 @@ public class TransferService {
         AccountDto fromAccount = accountClient.findById(userId, fromAccountId);
         AccountDto toAccount = accountClient.findById(userId, dto.toAccountId());
 
-        validateSameCurrency(fromAccount, toAccount);
+        BigDecimal amountToDeposit = resolveDepositAmount(fromAccount, toAccount, dto.amount());
 
         accountClient.withdraw(userId, fromAccountId, dto.amount());
-        accountClient.deposit(userId, dto.toAccountId(), dto.amount());
+        accountClient.deposit(userId, dto.toAccountId(), amountToDeposit);
 
         sendTransferNotifications(userId, fromAccountId, userId, dto.toAccountId(), dto.amount());
 
         return new TransferResultDto(
                 fromAccountId,
                 dto.toAccountId(),
-                dto.amount(),
+                amountToDeposit,
                 "SUCCESS"
         );
     }
@@ -52,17 +58,18 @@ public class TransferService {
         AccountDto fromAccount = accountClient.findById(fromUserId, fromAccountId);
         AccountDto toAccount = accountClient.findById(dto.toUserId(), dto.toAccountId());
 
-        validateSameCurrency(fromAccount, toAccount);
+        BigDecimal amountToDeposit = resolveDepositAmount(fromAccount, toAccount, dto.amount());
+
 
         accountClient.withdraw(fromUserId, fromAccountId, dto.amount());
-        accountClient.deposit(dto.toUserId(), dto.toAccountId(), dto.amount());
+        accountClient.deposit(dto.toUserId(), dto.toAccountId(), amountToDeposit);
 
         sendTransferNotifications(fromUserId, fromAccountId, dto.toUserId(), dto.toAccountId(), dto.amount());
 
         return new TransferResultDto(
                 fromAccountId,
                 dto.toAccountId(),
-                dto.amount(),
+                amountToDeposit,
                 "SUCCESS"
         );
     }
@@ -74,10 +81,19 @@ public class TransferService {
         }
     }
 
-    private void validateSameCurrency(AccountDto fromAccount, AccountDto toAccount) {
-        if (!fromAccount.currency().equals(toAccount.currency())) {
-            throw new IllegalArgumentException("Для текущей версии transfer-service счета должны быть в одной валюте");
+    private BigDecimal resolveDepositAmount(AccountDto fromAccount, AccountDto toAccount, BigDecimal sourceAmount) {
+        if (fromAccount.currency().equals(toAccount.currency())) {
+            return sourceAmount;
         }
+
+        ConvertResponseDto convertResponseDto = exchangeClient.convert(new ConvertRequestDto(
+                        fromAccount.currency(),
+                        toAccount.currency(),
+                        sourceAmount
+                )
+        );
+
+        return convertResponseDto.convertedAmount();
     }
 
     private void sendTransferNotifications(Long fromUserId,
