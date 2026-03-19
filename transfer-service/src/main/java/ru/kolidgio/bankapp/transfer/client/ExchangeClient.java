@@ -16,7 +16,7 @@ public class ExchangeClient {
 
     public ConvertResponseDto convert(ConvertRequestDto convertRequestDto) {
         return restClient.post()
-                .uri(exchangeServiceUrl + "/api/exchange/covert")
+                .uri(exchangeServiceUrl + "/api/exchange/convert")
                 .body(convertRequestDto)
                 .retrieve()
                 .body(ConvertResponseDto.class);
