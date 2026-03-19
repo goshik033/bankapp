@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: transfer-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+services:
+  accounts-service:
+    url: http://localhost:8081
+  blocker-service:
+    url: http://localhost:8085
+  notification-service:
+    url: http://localhost:8086
