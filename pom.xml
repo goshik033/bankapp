@@ -22,6 +22,7 @@
         <module>transfer-service</module>
         <module>exchange-service</module>
         <module>exchange-generator-service</module>
+        <module>front-ui</module>
 
 
     </modules>

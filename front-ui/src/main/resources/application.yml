@@ -1,0 +1,29 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: front-ui
+  thymeleaf:
+    cache: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+
+services:
+  accounts-service:
+    url: http://accounts-service:8081
+  cash-service:
+    url: http://cash-service:8082
+  transfer-service:
+    url: http://transfer-service:8083
+  exchange-service:
+    url: http://exchange-service:8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
