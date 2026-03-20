@@ -8,11 +8,11 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://discovery-server:8761/eureka/
 
 services:
   exchange-service:
-    url: http://localhost:8084
+    url: http://exchange-service:8084
 
 management:
   endpoints:
