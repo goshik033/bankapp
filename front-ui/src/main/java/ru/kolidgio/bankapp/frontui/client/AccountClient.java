@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import ru.kolidgio.bankapp.frontui.dto.AccountDto;
-import ru.kolidgio.bankapp.frontui.dto.CreateUserDto;
-import ru.kolidgio.bankapp.frontui.dto.UserAuthDto;
-import ru.kolidgio.bankapp.frontui.dto.UserDto;
+import ru.kolidgio.bankapp.frontui.dto.*;
 
 import java.util.List;
 
@@ -44,6 +41,13 @@ public class AccountClient {
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<AccountDto>>() {});
 
+    }
+    public void createAccount(Long userId, CreateAccountDto createAccountDto) {
+        restClient.post()
+                .uri(accountsServiceUrl + "/api/users/{userId}/accounts", userId)
+                .body(createAccountDto)
+                .retrieve()
+                .toBodilessEntity();
     }
 
 }

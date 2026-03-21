@@ -20,7 +20,29 @@
     <p><strong>Email:</strong> <span th:text="${currentUser.email()}"></span></p>
     <p><strong>Дата рождения:</strong> <span th:text="${currentUser.birthDate()}"></span></p>
 </div>
+<h3>Открыть новый счёт</h3>
 
+<div th:if="${accountError}" style="color:red;">
+    <p th:text="${accountError}"></p>
+</div>
+
+<form th:action="@{/accounts/create}" th:object="${createAccountForm}" method="post">
+    <label>
+        Валюта:
+        <select th:field="*{currency}">
+            <option value="">-- выберите валюту --</option>
+            <option value="RUB">RUB</option>
+            <option value="USD">USD</option>
+            <option value="CNY">CNY</option>
+        </select>
+    </label>
+    <div th:if="${#fields.hasErrors('currency')}" style="color:red;">
+        <p th:errors="*{currency}"></p>
+    </div>
+    <br><br>
+
+    <button type="submit">Открыть счёт</button>
+</form>
 <h3>Счета пользователя</h3>
 <table border="1" cellpadding="8" cellspacing="0" th:if="${accounts}">
     <thead>

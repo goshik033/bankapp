@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import ru.kolidgio.bankapp.frontui.client.AccountClient;
 import ru.kolidgio.bankapp.frontui.client.ExchangeClient;
+import ru.kolidgio.bankapp.frontui.dto.CreateAccountDto;
 import ru.kolidgio.bankapp.frontui.dto.CreateUserDto;
 import ru.kolidgio.bankapp.frontui.dto.UserDto;
 
@@ -74,12 +75,44 @@ public class PageController {
 
             model.addAttribute("currentUser", user);
             model.addAttribute("accounts", accountClient.getAccountsByUserId(user.id()));
+
+            if (!model.containsAttribute("createAccountForm")) {
+                model.addAttribute("createAccountForm", new CreateAccountDto(""));
+            }
         } catch (Exception e) {
             model.addAttribute("userError", "Не удалось загрузить данные пользователя");
         }
 
         return "home";
     }
+
+
+    @PostMapping("/accounts/create")
+    public String createAccount(@Valid @ModelAttribute("createAccountForm") CreateAccountDto createAccountDto,
+                                BindingResult bindingResult,
+                                Authentication authentication,
+                                Model model) {
+        if (bindingResult.hasErrors()) {
+            return homePage(model, authentication);
+        }
+
+        try {
+            String login = authentication.getName();
+            UserDto user = accountClient.getUserByLogin(login);
+
+            accountClient.createAccount(user.id(), createAccountDto);
+            return "redirect:/home";
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("accountError", extractBackendError(e));
+            model.addAttribute("createAccountForm", createAccountDto);
+            return homePage(model, authentication);
+        } catch (Exception e) {
+            model.addAttribute("accountError", "Не удалось создать счёт");
+            model.addAttribute("createAccountForm", createAccountDto);
+            return homePage(model, authentication);
+        }
+    }
+
 
     @ControllerAdvice
     public static class GlobalExceptionHandler {
