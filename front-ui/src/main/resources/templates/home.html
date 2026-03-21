@@ -62,9 +62,39 @@
 </table>
 
 <h2>Пополнение и снятие</h2>
-<div>
-    <p>Здесь будет форма для cash-service.</p>
+
+<div th:if="${cashError}" style="color:red;">
+    <p th:text="${cashError}"></p>
 </div>
+
+<form th:object="${cashForm}" method="post">
+    <label>
+        Счёт:
+        <select th:field="*{accountId}">
+            <option value="">-- выберите счёт --</option>
+            <option th:each="account : ${accounts}"
+                    th:value="${account.id()}"
+                    th:text="${account.currency()} + ' | Баланс: ' + ${account.balance()}">
+            </option>
+        </select>
+    </label>
+    <div th:if="${#fields.hasErrors('accountId')}" style="color:red;">
+        <p th:errors="*{accountId}"></p>
+    </div>
+    <br><br>
+
+    <label>
+        Сумма:
+        <input type="number" step="0.01" th:field="*{amount}">
+    </label>
+    <div th:if="${#fields.hasErrors('amount')}" style="color:red;">
+        <p th:errors="*{amount}"></p>
+    </div>
+    <br><br>
+
+    <button type="submit" th:formaction="@{/cash/deposit}">Положить</button>
+    <button type="submit" th:formaction="@{/cash/withdraw}">Снять</button>
+</form>
 
 <h2>Перевод между своими счетами</h2>
 <div>

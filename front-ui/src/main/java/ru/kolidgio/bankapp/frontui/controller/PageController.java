@@ -9,7 +9,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import ru.kolidgio.bankapp.frontui.client.AccountClient;
+import ru.kolidgio.bankapp.frontui.client.CashClient;
 import ru.kolidgio.bankapp.frontui.client.ExchangeClient;
+import ru.kolidgio.bankapp.frontui.dto.CashOperationDto;
 import ru.kolidgio.bankapp.frontui.dto.CreateAccountDto;
 import ru.kolidgio.bankapp.frontui.dto.CreateUserDto;
 import ru.kolidgio.bankapp.frontui.dto.UserDto;
@@ -19,6 +21,7 @@ import ru.kolidgio.bankapp.frontui.dto.UserDto;
 public class PageController {
     private final AccountClient accountClient;
     private final ExchangeClient exchangeClient;
+    private final CashClient cashClient;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -79,6 +82,9 @@ public class PageController {
             if (!model.containsAttribute("createAccountForm")) {
                 model.addAttribute("createAccountForm", new CreateAccountDto(""));
             }
+            if (!model.containsAttribute("cashForm")) {
+                model.addAttribute("cashForm", new CashOperationDto(null, null));
+            }
         } catch (Exception e) {
             model.addAttribute("userError", "Не удалось загрузить данные пользователя");
         }
@@ -112,6 +118,59 @@ public class PageController {
             return homePage(model, authentication);
         }
     }
+    @PostMapping("/cash/deposit")
+    public String deposit(@Valid @ModelAttribute("cashForm") CashOperationDto cashForm,
+                          BindingResult bindingResult,
+                          Authentication authentication,
+                          Model model) {
+        if (bindingResult.hasErrors()) {
+            return homePage(model, authentication);
+        }
+
+        try {
+            String login = authentication.getName();
+            UserDto user = accountClient.getUserByLogin(login);
+
+            cashClient.deposit(user.id(), cashForm);
+            return "redirect:/home";
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("cashError", extractBackendError(e));
+            model.addAttribute("cashForm", cashForm);
+            return homePage(model, authentication);
+        } catch (Exception e) {
+            model.addAttribute("cashError", "Не удалось пополнить счёт");
+            model.addAttribute("cashForm", cashForm);
+            return homePage(model, authentication);
+        }
+    }
+
+    @PostMapping("/cash/withdraw")
+    public String withdraw(@Valid @ModelAttribute("cashForm") CashOperationDto cashForm,
+                           BindingResult bindingResult,
+                           Authentication authentication,
+                           Model model) {
+        if (bindingResult.hasErrors()) {
+            return homePage(model, authentication);
+        }
+
+        try {
+            String login = authentication.getName();
+            UserDto user = accountClient.getUserByLogin(login);
+
+            cashClient.withdraw(user.id(), cashForm);
+            return "redirect:/home";
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("cashError", extractBackendError(e));
+            model.addAttribute("cashForm", cashForm);
+            return homePage(model, authentication);
+        } catch (Exception e) {
+            model.addAttribute("cashError", "Не удалось снять деньги");
+            model.addAttribute("cashForm", cashForm);
+            return homePage(model, authentication);
+        }
+    }
+
+
 
 
     @ControllerAdvice
@@ -129,6 +188,8 @@ public class PageController {
             return "register";
         }
     }
+
+
 
     private String extractBackendError(HttpClientErrorException e) {
         String body = e.getResponseBodyAsString();
@@ -148,4 +209,6 @@ public class PageController {
 
         return "Ошибка регистрации";
     }
+
+
 }
