@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Регистрация</title>
@@ -7,42 +7,64 @@
 <body>
 <h1>Регистрация</h1>
 
-<form>
+<div th:if="${errorMessage}" style="color:red; margin-bottom:16px;">
+    <p th:text="${errorMessage}"></p>
+</div>
+
+<form th:action="@{/register}" th:object="${user}" method="post">
     <label>
         Имя:
-        <input type="text" name="firstName">
+        <input type="text" th:field="*{firstName}">
     </label>
-    <br><br>
+    <div th:if="${#fields.hasErrors('firstName')}" style="color:red;">
+        <p th:errors="*{firstName}"></p>
+    </div>
+    <br>
 
     <label>
         Фамилия:
-        <input type="text" name="lastName">
+        <input type="text" th:field="*{lastName}">
     </label>
-    <br><br>
+    <div th:if="${#fields.hasErrors('lastName')}" style="color:red;">
+        <p th:errors="*{lastName}"></p>
+    </div>
+    <br>
 
     <label>
         Email:
-        <input type="email" name="email">
+        <input type="email" th:field="*{email}">
     </label>
-    <br><br>
+    <div th:if="${#fields.hasErrors('email')}" style="color:red;">
+        <p th:errors="*{email}"></p>
+    </div>
+    <br>
 
     <label>
         Дата рождения:
-        <input type="date" name="birthDate">
+        <input type="date" th:field="*{birthDate}">
     </label>
-    <br><br>
+    <div th:if="${#fields.hasErrors('birthDate')}" style="color:red;">
+        <p th:errors="*{birthDate}"></p>
+    </div>
+    <br>
 
     <label>
         Логин:
-        <input type="text" name="login">
+        <input type="text" th:field="*{login}">
     </label>
-    <br><br>
+    <div th:if="${#fields.hasErrors('login')}" style="color:red;">
+        <p th:errors="*{login}"></p>
+    </div>
+    <br>
 
     <label>
         Пароль:
-        <input type="password" name="password">
+        <input type="password" th:field="*{password}">
     </label>
-    <br><br>
+    <div th:if="${#fields.hasErrors('password')}" style="color:red;">
+        <p th:errors="*{password}"></p>
+    </div>
+    <br>
 
     <button type="submit">Зарегистрироваться</button>
 </form>

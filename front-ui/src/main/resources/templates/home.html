@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Банк</title>
@@ -28,9 +28,27 @@
 </div>
 
 <h2>Курсы валют</h2>
-<div>
-    <p>Здесь будет таблица exchange-service.</p>
+
+<div th:if="${ratesError}" style="color:red;">
+    <p th:text="${ratesError}"></p>
 </div>
+
+<table border="1" cellpadding="8" cellspacing="0" th:if="${rates}">
+    <thead>
+    <tr>
+        <th>Валюта</th>
+        <th>Покупка</th>
+        <th>Продажа</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="rate : ${rates}">
+        <td th:text="${rate.currency()}"></td>
+        <td th:text="${rate.buyRate()}"></td>
+        <td th:text="${rate.sellRate()}"></td>
+    </tr>
+    </tbody>
+</table>
 
 <p><a href="/login">Выйти</a></p>
 </body>
