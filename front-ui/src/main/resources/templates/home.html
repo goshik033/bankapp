@@ -97,9 +97,53 @@
 </form>
 
 <h2>Перевод между своими счетами</h2>
-<div>
-    <p>Здесь будет форма для transfer-service /own.</p>
+
+<div th:if="${ownTransferError}" style="color:red;">
+    <p th:text="${ownTransferError}"></p>
 </div>
+
+<form th:action="@{/transfer/own}" th:object="${ownTransferForm}" method="post">
+    <label>
+        Счёт отправления:
+        <select th:field="*{fromAccountId}">
+            <option value="">-- выберите счёт --</option>
+            <option th:each="account : ${accounts}"
+                    th:value="${account.id()}"
+                    th:text="${account.currency()} + ' | Баланс: ' + ${account.balance()}">
+            </option>
+        </select>
+    </label>
+    <div th:if="${#fields.hasErrors('fromAccountId')}" style="color:red;">
+        <p th:errors="*{fromAccountId}"></p>
+    </div>
+    <br><br>
+
+    <label>
+        Счёт получения:
+        <select th:field="*{toAccountId}">
+            <option value="">-- выберите счёт --</option>
+            <option th:each="account : ${accounts}"
+                    th:value="${account.id()}"
+                    th:text="${account.currency()} + ' | Баланс: ' + ${account.balance()}">
+            </option>
+        </select>
+    </label>
+    <div th:if="${#fields.hasErrors('toAccountId')}" style="color:red;">
+        <p th:errors="*{toAccountId}"></p>
+    </div>
+    <br><br>
+
+    <label>
+        Сумма:
+        <input type="number" step="0.01" th:field="*{amount}">
+    </label>
+    <div th:if="${#fields.hasErrors('amount')}" style="color:red;">
+        <p th:errors="*{amount}"></p>
+    </div>
+    <br><br>
+
+    <button type="submit">Перевести между своими счетами</button>
+</form>
 
 <h2>Перевод другому пользователю</h2>
 <div>

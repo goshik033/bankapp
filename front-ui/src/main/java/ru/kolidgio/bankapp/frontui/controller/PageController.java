@@ -11,10 +11,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import ru.kolidgio.bankapp.frontui.client.AccountClient;
 import ru.kolidgio.bankapp.frontui.client.CashClient;
 import ru.kolidgio.bankapp.frontui.client.ExchangeClient;
-import ru.kolidgio.bankapp.frontui.dto.CashOperationDto;
-import ru.kolidgio.bankapp.frontui.dto.CreateAccountDto;
-import ru.kolidgio.bankapp.frontui.dto.CreateUserDto;
-import ru.kolidgio.bankapp.frontui.dto.UserDto;
+import ru.kolidgio.bankapp.frontui.client.TransferClient;
+import ru.kolidgio.bankapp.frontui.dto.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -22,6 +20,7 @@ public class PageController {
     private final AccountClient accountClient;
     private final ExchangeClient exchangeClient;
     private final CashClient cashClient;
+    private final TransferClient transferClient;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -85,11 +84,48 @@ public class PageController {
             if (!model.containsAttribute("cashForm")) {
                 model.addAttribute("cashForm", new CashOperationDto(null, null));
             }
+            if (!model.containsAttribute("ownTransferForm")) {
+                model.addAttribute("ownTransferForm", new TransferBetweenOwnAccountsRequestDto(null, null, null));
+            }
         } catch (Exception e) {
             model.addAttribute("userError", "Не удалось загрузить данные пользователя");
         }
 
         return "home";
+    }
+
+    @PostMapping("/transfer/own")
+    public String transferBetweenOwnAccounts(
+            @Valid @ModelAttribute("ownTransferForm") TransferBetweenOwnAccountsRequestDto ownTransferForm,
+            BindingResult bindingResult,
+            Authentication authentication,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            return homePage(model, authentication);
+        }
+
+        if (ownTransferForm.fromAccountId().equals(ownTransferForm.toAccountId())) {
+            model.addAttribute("ownTransferError", "Счёт отправления и счёт получения должны отличаться");
+            model.addAttribute("ownTransferForm", ownTransferForm);
+            return homePage(model, authentication);
+        }
+
+        try {
+            String login = authentication.getName();
+            UserDto user = accountClient.getUserByLogin(login);
+
+            transferClient.transferBetweenOwnAccounts(user.id(), ownTransferForm);
+            return "redirect:/home";
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("ownTransferError", extractBackendError(e));
+            model.addAttribute("ownTransferForm", ownTransferForm);
+            return homePage(model, authentication);
+        } catch (Exception e) {
+            model.addAttribute("ownTransferError", "Не удалось выполнить перевод между своими счетами");
+            model.addAttribute("ownTransferForm", ownTransferForm);
+            return homePage(model, authentication);
+        }
     }
 
 
