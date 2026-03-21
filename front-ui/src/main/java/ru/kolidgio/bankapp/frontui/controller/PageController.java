@@ -2,6 +2,7 @@ package ru.kolidgio.bankapp.frontui.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,6 +11,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import ru.kolidgio.bankapp.frontui.client.AccountClient;
 import ru.kolidgio.bankapp.frontui.client.ExchangeClient;
 import ru.kolidgio.bankapp.frontui.dto.CreateUserDto;
+import ru.kolidgio.bankapp.frontui.dto.UserDto;
 
 @Controller
 @RequiredArgsConstructor
@@ -37,28 +39,45 @@ public class PageController {
     public String register(@Valid @ModelAttribute("user") CreateUserDto createUserDto,
                            BindingResult bindingResult,
                            Model model) {
+        System.out.println("REGISTER HIT");
+        System.out.println("DTO = " + createUserDto);
+
         if (bindingResult.hasErrors()) {
+            System.out.println("BINDING ERRORS = " + bindingResult.getAllErrors());
             return "register";
         }
 
         try {
+            System.out.println("CALL ACCOUNTS-SERVICE");
             accountClient.create(createUserDto);
+            System.out.println("REGISTER SUCCESS");
             return "redirect:/login";
-        } catch (HttpClientErrorException e) {
-            model.addAttribute("errorMessage", extractBackendError(e));
-            model.addAttribute("user", createUserDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("errorMessage", e.getMessage());
             return "register";
         }
     }
 
 
     @GetMapping({"/", "/home"})
-    public String homePage(Model model) {
+    public String homePage(Model model, Authentication authentication) {
         try {
             model.addAttribute("rates", exchangeClient.getRates());
         } catch (Exception e) {
             model.addAttribute("ratesError", "Не удалось загрузить курсы валют");
         }
+
+        try {
+            String login = authentication.getName();
+            UserDto user = accountClient.getUserByLogin(login);
+
+            model.addAttribute("currentUser", user);
+            model.addAttribute("accounts", accountClient.getAccountsByUserId(user.id()));
+        } catch (Exception e) {
+            model.addAttribute("userError", "Не удалось загрузить данные пользователя");
+        }
+
         return "home";
     }
 

@@ -8,9 +8,36 @@
 <h1>Главная страница банка</h1>
 
 <h2>Настройки аккаунта</h2>
-<div>
-    <p>Здесь будут данные пользователя и счета.</p>
+
+<div th:if="${userError}" style="color:red;">
+    <p th:text="${userError}"></p>
 </div>
+
+<div th:if="${currentUser}">
+    <p><strong>Логин:</strong> <span th:text="${currentUser.login()}"></span></p>
+    <p><strong>Имя:</strong> <span th:text="${currentUser.firstName()}"></span></p>
+    <p><strong>Фамилия:</strong> <span th:text="${currentUser.lastName()}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${currentUser.email()}"></span></p>
+    <p><strong>Дата рождения:</strong> <span th:text="${currentUser.birthDate()}"></span></p>
+</div>
+
+<h3>Счета пользователя</h3>
+<table border="1" cellpadding="8" cellspacing="0" th:if="${accounts}">
+    <thead>
+    <tr>
+<!--        <th>ID счёта</th>-->
+        <th>Валюта</th>
+        <th>Баланс</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="account : ${accounts}">
+<!--        <td th:text="${account.id()}"></td>-->
+        <td th:text="${account.currency()}"></td>
+        <td th:text="${account.balance()}"></td>
+    </tr>
+    </tbody>
+</table>
 
 <h2>Пополнение и снятие</h2>
 <div>
@@ -50,6 +77,8 @@
     </tbody>
 </table>
 
-<p><a href="/login">Выйти</a></p>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Выйти</button>
+</form>
 </body>
 </html>

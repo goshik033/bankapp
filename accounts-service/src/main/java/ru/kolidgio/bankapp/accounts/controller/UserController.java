@@ -33,6 +33,10 @@ public class UserController {
     public UserDto findById(@PathVariable("id") Long id) {
         return userService.findById(id);
     }
+    @GetMapping("/by-login")
+    public UserDto findByLogin(@RequestParam("login") String login) {
+        return userService.findByLogin(login);
+    }
 
     @PatchMapping("/{id}")
     public UserDto update(@PathVariable("id") Long id, @RequestBody @Valid UpdateUserDto updateUserDto) {

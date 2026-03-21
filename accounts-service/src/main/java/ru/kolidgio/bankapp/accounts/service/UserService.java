@@ -5,10 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kolidgio.bankapp.accounts.dto.user.CreateUserDto;
-import ru.kolidgio.bankapp.accounts.dto.user.UpdateUserDto;
-import ru.kolidgio.bankapp.accounts.dto.user.UpdateUserPasswordDto;
-import ru.kolidgio.bankapp.accounts.dto.user.UserDto;
+import ru.kolidgio.bankapp.accounts.dto.user.*;
 import ru.kolidgio.bankapp.accounts.entity.User;
 import ru.kolidgio.bankapp.accounts.repository.UserRepository;
 import ru.kolidgio.bankapp.accounts.service.errors.BadRequestException;
@@ -115,6 +112,25 @@ public class UserService {
 
         user.setHashPassword(passwordEncoder.encode(updateUserPasswordDto.newPassword()));
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserAuthDto findAuthByLogin(String login) {
+        User user = userRepository.findByLogin(login)
+                .orElseThrow(() -> new NotFoundException("Пользователь с login " + login + " не найден"));
+        return new UserAuthDto(user.getId(), user.getLogin(), user.getHashPassword());
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto findByLogin(String login) {
+        User user = userRepository.findByLogin(login)
+                .orElseThrow(() -> new NotFoundException("Пользователь с login " + login + " не найден"));
+        return new UserDto(user.getId(),
+                user.getLogin(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getBirthDate());
     }
 
     private UserDto toDto(User user) {
