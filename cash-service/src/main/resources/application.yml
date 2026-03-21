@@ -4,6 +4,21 @@ server:
 spring:
   application:
     name: cash-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/bankapp-realm
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            authorization-grant-type: client_credentials
+            client-id: cash-service-client
+            client-secret: 2XGxtQqBA0MlCMTmpnNj6Z2x60Ai0WIi
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8080/realms/bankapp-realm
 
 eureka:
   client:

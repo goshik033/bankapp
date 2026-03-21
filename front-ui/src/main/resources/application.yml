@@ -6,6 +6,18 @@ spring:
     name: front-ui
   thymeleaf:
     cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            authorization-grant-type: client_credentials
+            client-id: front-ui-client
+            client-secret: ZPncHR0elrxiUIONpaYErdppm2IySBCK
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8080/realms/bankapp-realm
 
 eureka:
   client:

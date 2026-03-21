@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: blocker-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/bankapp-realm
 
 eureka:
   client:

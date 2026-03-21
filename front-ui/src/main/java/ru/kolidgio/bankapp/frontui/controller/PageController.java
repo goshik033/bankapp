@@ -62,7 +62,6 @@ public class PageController {
         }
     }
 
-
     @GetMapping({"/", "/home"})
     public String homePage(Model model, Authentication authentication) {
         try {
@@ -87,11 +86,43 @@ public class PageController {
             if (!model.containsAttribute("ownTransferForm")) {
                 model.addAttribute("ownTransferForm", new TransferBetweenOwnAccountsRequestDto(null, null, null));
             }
+            if (!model.containsAttribute("otherTransferForm")) {
+                model.addAttribute("otherTransferForm", new TransferToAnotherUserRequestDto(null, "", null, null));
+            }
         } catch (Exception e) {
             model.addAttribute("userError", "Не удалось загрузить данные пользователя");
         }
 
         return "home";
+    }
+
+    @PostMapping("/transfer/other")
+    public String transferToAnotherUser(
+            @Valid @ModelAttribute("otherTransferForm") TransferToAnotherUserRequestDto otherTransferForm,
+            BindingResult bindingResult,
+            Authentication authentication,
+            Model model
+    ) {
+        if (bindingResult.hasErrors()) {
+            return homePage(model, authentication);
+        }
+
+        try {
+            String currentLogin = authentication.getName();
+            UserDto fromUser = accountClient.getUserByLogin(currentLogin);
+            UserDto toUser = accountClient.getUserByLogin(otherTransferForm.toUserLogin());
+
+            transferClient.transferToAnotherUser(fromUser.id(), toUser.id(), otherTransferForm);
+            return "redirect:/home";
+        } catch (HttpClientErrorException e) {
+            model.addAttribute("otherTransferError", extractBackendError(e));
+            model.addAttribute("otherTransferForm", otherTransferForm);
+            return homePage(model, authentication);
+        } catch (Exception e) {
+            model.addAttribute("otherTransferError", "Не удалось выполнить перевод другому пользователю");
+            model.addAttribute("otherTransferForm", otherTransferForm);
+            return homePage(model, authentication);
+        }
     }
 
     @PostMapping("/transfer/own")
@@ -127,7 +158,6 @@ public class PageController {
             return homePage(model, authentication);
         }
     }
-
 
     @PostMapping("/accounts/create")
     public String createAccount(@Valid @ModelAttribute("createAccountForm") CreateAccountDto createAccountDto,
@@ -206,9 +236,6 @@ public class PageController {
         }
     }
 
-
-
-
     @ControllerAdvice
     public static class GlobalExceptionHandler {
 
@@ -224,8 +251,6 @@ public class PageController {
             return "register";
         }
     }
-
-
 
     private String extractBackendError(HttpClientErrorException e) {
         String body = e.getResponseBodyAsString();
@@ -245,6 +270,5 @@ public class PageController {
 
         return "Ошибка регистрации";
     }
-
 
 }

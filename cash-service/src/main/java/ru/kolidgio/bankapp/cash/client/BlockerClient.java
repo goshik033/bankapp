@@ -1,5 +1,6 @@
 package ru.kolidgio.bankapp.cash.client;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -9,15 +10,16 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class BlockerClient {
 
-    private final RestClient restClient = RestClient.builder().build();
+    private final RestClient oauth2RestClient;
 
     @Value("${services.blocker-service.url}")
     private String blockerServiceUrl;
 
     public BlockerResponseDto check(BigDecimal amount) {
-        return restClient.post()
+        return oauth2RestClient.post()
                 .uri(blockerServiceUrl + "/api/blocker/check")
                 .body(Map.of("amount", amount))
                 .retrieve()
